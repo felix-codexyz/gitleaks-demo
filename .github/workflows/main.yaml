@@ -39,7 +39,7 @@ jobs:
           report-format: csv
           report-path: gitleaks-report.csv
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
       # Upload CSV Report as Artifact
       - name: Upload CSV Report

@@ -1,8 +1,8 @@
 name: Gitleaks Secret Scanning
 
 on:
-  push:          # Runs on every push
-  pull_request:  # Runs on PRs
+  push:
+  pull_request:
 
 jobs:
   scan:
@@ -14,7 +14,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Install Gitleaks Dynamically
       - name: Install Gitleaks
         run: |
           LATEST_VERSION=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r .tag_name)
@@ -23,65 +22,38 @@ jobs:
           chmod +x gitleaks
           sudo mv gitleaks /usr/local/bin/gitleaks
 
-      # Verify Gitleaks Installation
       - name: Verify Gitleaks Installation
         run: gitleaks version || echo "Gitleaks installation failed!"
 
-      # Run Gitleaks Manually with JSON Report
       - name: Run Gitleaks (JSON Report)
         run: gitleaks detect --report-format=json --report-path=gitleaks-report.json
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      # Verify JSON Report Exists Before Upload
-      - name: Verify JSON Report Exists
-        run: |
-          if [ ! -f gitleaks-report.json ]; then
-            echo "Error: JSON report not found!"; exit 1;
-          fi
-
-      # Upload JSON Report as Artifact
       - name: Upload JSON Report
         uses: actions/upload-artifact@v4
         with:
           name: gitleaks-report-json
           path: gitleaks-report.json
 
-      # Run Gitleaks Manually with CSV Report
       - name: Run Gitleaks (CSV Report)
         run: gitleaks detect --report-format=csv --report-path=gitleaks-report.csv
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      # Verify CSV Report Exists Before Upload
-      - name: Verify CSV Report Exists
-        run: |
-          if [ ! -f gitleaks-report.csv ]; then
-            echo "Error: CSV report not found!"; exit 1;
-          fi
-
-      # Upload CSV Report as Artifact
       - name: Upload CSV Report
         uses: actions/upload-artifact@v4
         with:
           name: gitleaks-report-csv
           path: gitleaks-report.csv
 
-      # Run Gitleaks Manually with SARIF Report for GitHub Security Scanning
       - name: Run Gitleaks (SARIF Report)
         run: gitleaks detect --report-format=sarif --report-path=gitleaks-report.sarif
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      # Verify SARIF Report Exists Before Upload
-      - name: Verify SARIF Report Exists
-        run: |
-          if [ ! -f gitleaks-report.sarif ]; then
-            echo "Error: SARIF report not found!"; exit 1;
-          fi
-
-      # Upload SARIF Report to GitHub Security Scanning
-      - name: Upload SARIF Report for Security Tab
-        uses: github/codeql-action/upload-sarif@v3
+      - name: Upload SARIF Report
+        uses: actions/upload-artifact@v4
         with:
-          sarif_file: gitleaks-report.sarif
+          name: gitleaks-report-sarif
+          path: gitleaks-report.sarif

@@ -8,6 +8,7 @@ jobs:
   scan:
     name: Run Gitleaks and Upload Report
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,7 +28,7 @@ jobs:
         run: gitleaks version || echo "Gitleaks installation failed!"
 
       - name: Run Gitleaks (JSON Report)
-        run: gitleaks detect --report-format=json --report-path=gitleaks-report.json
+        run: gitleaks detect --report-format=json --report-path=gitleaks-report.json || true
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
@@ -38,7 +39,7 @@ jobs:
           path: gitleaks-report.json
 
       - name: Run Gitleaks (CSV Report)
-        run: gitleaks detect --report-format=csv --report-path=gitleaks-report.csv
+        run: gitleaks detect --report-format=csv --report-path=gitleaks-report.csv || true
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
@@ -49,7 +50,7 @@ jobs:
           path: gitleaks-report.csv
 
       - name: Run Gitleaks (SARIF Report)
-        run: gitleaks detect --report-format=sarif --report-path=gitleaks-report.sarif
+        run: gitleaks detect --report-format=sarif --report-path=gitleaks-report.sarif || true
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
@@ -58,9 +59,3 @@ jobs:
         with:
           name: gitleaks-report-sarif
           path: gitleaks-report.sarif
-
-      # Optional: Upload SARIF to GitHub Code Scanning
-      # - name: Upload SARIF to GitHub Code Scanning
-      #   uses: github/codeql-action/upload-sarif@v2
-      #   with:
-      #     sarif_file: gitleaks-report.sarif

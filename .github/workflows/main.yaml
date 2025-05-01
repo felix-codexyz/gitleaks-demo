@@ -22,7 +22,7 @@ jobs:
           report-format: json
           report-path: gitleaks-report.json
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       # Upload JSON Report as Artifact
       - name: Upload JSON Report
@@ -39,7 +39,7 @@ jobs:
           report-format: csv
           report-path: gitleaks-report.csv
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       # Upload CSV Report as Artifact
       - name: Upload CSV Report
@@ -56,7 +56,7 @@ jobs:
           report-format: sarif
           report-path: gitleaks-report.sarif
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       # Upload SARIF Report to GitHub Security Scanning
       - name: Upload SARIF Report for Security Tab

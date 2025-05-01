@@ -1,6 +1,9 @@
 name: Gitleaks Secret Scanning - Upload Report
 
 on:
+  push:
+  pull_request:
+
   workflow_run:
     workflows: ["Gitleaks Secret Scanning - Generate Report"]
     types:

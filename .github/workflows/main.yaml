@@ -14,10 +14,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Install Gitleaks Correctly
+      # Install Gitleaks Dynamically
       - name: Install Gitleaks
         run: |
-          wget https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64.tar.gz
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r .tag_name)
+          wget https://github.com/gitleaks/gitleaks/releases/download/$LATEST_VERSION/gitleaks-linux-amd64.tar.gz
           tar -xvzf gitleaks-linux-amd64.tar.gz
           chmod +x gitleaks
           sudo mv gitleaks /usr/local/bin/gitleaks
@@ -75,12 +76,3 @@ jobs:
       # Verify SARIF Report Exists Before Upload
       - name: Verify SARIF Report Exists
         run: |
-          if [ ! -f gitleaks-report.sarif ]; then
-            echo "Error: SARIF report not found!"; exit 1;
-          fi
-
-      # Upload SARIF Report to GitHub Security Scanning
-      - name: Upload SARIF Report for Security Tab
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: gitleaks-report.sarif

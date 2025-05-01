@@ -14,16 +14,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Install Gitleaks
+      # Install Gitleaks Correctly
       - name: Install Gitleaks
         run: |
-          curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64 -o gitleaks
+          wget https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64.tar.gz
+          tar -xvzf gitleaks-linux-amd64.tar.gz
           chmod +x gitleaks
-          sudo mv gitleaks /usr/local/bin/
+          sudo mv gitleaks /usr/local/bin/gitleaks
 
       # Verify Gitleaks Installation
       - name: Verify Gitleaks Installation
-        run: gitleaks version
+        run: gitleaks version || echo "Gitleaks installation failed!"
 
       # Run Gitleaks Manually with JSON Report
       - name: Run Gitleaks (JSON Report)

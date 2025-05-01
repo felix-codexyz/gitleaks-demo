@@ -14,10 +14,20 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Install Gitleaks
+      - name: Install Gitleaks
+        run: |
+          curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64 -o gitleaks
+          chmod +x gitleaks
+          sudo mv gitleaks /usr/local/bin/
+
+      # Verify Gitleaks Installation
+      - name: Verify Gitleaks Installation
+        run: gitleaks version
+
       # Run Gitleaks Manually with JSON Report
       - name: Run Gitleaks (JSON Report)
-        run: |
-          gitleaks detect --report-format=json --report-path=gitleaks-report.json
+        run: gitleaks detect --report-format=json --report-path=gitleaks-report.json
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
@@ -37,8 +47,7 @@ jobs:
 
       # Run Gitleaks Manually with CSV Report
       - name: Run Gitleaks (CSV Report)
-        run: |
-          gitleaks detect --report-format=csv --report-path=gitleaks-report.csv
+        run: gitleaks detect --report-format=csv --report-path=gitleaks-report.csv
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
@@ -58,8 +67,7 @@ jobs:
 
       # Run Gitleaks Manually with SARIF Report for GitHub Security Scanning
       - name: Run Gitleaks (SARIF Report)
-        run: |
-          gitleaks detect --report-format=sarif --report-path=gitleaks-report.sarif
+        run: gitleaks detect --report-format=sarif --report-path=gitleaks-report.sarif
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 

@@ -17,8 +17,9 @@ jobs:
       - name: Install Gitleaks
         run: |
           LATEST_VERSION=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r .tag_name)
-          wget https://github.com/gitleaks/gitleaks/releases/download/$LATEST_VERSION/gitleaks-linux-amd64.tar.gz
-          tar -xvzf gitleaks-linux-amd64.tar.gz
+          FILE_NAME="gitleaks_${LATEST_VERSION#v}_linux_x64.tar.gz"
+          wget https://github.com/gitleaks/gitleaks/releases/download/$LATEST_VERSION/$FILE_NAME
+          tar -xvzf $FILE_NAME
           chmod +x gitleaks
           sudo mv gitleaks /usr/local/bin/gitleaks
 
@@ -57,3 +58,9 @@ jobs:
         with:
           name: gitleaks-report-sarif
           path: gitleaks-report.sarif
+
+      # Optional: Upload SARIF to GitHub Code Scanning
+      # - name: Upload SARIF to GitHub Code Scanning
+      #   uses: github/codeql-action/upload-sarif@v2
+      #   with:
+      #     sarif_file: gitleaks-report.sarif

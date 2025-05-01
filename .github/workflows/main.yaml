@@ -1,26 +1,65 @@
-name: Gitleaks Secret Scanning - Upload Report
+name: Gitleaks Secret Scanning
 
 on:
-  push:
-  pull_request:
-
-  workflow_run:
-    workflows: ["Gitleaks Secret Scanning - Generate Report"]
-    types:
-      - completed
+  push:          # Runs on every push
+  pull_request:  # Runs on PRs
 
 jobs:
-  upload_report:
-    name: Upload Gitleaks Report
+  scan:
+    name: Run Gitleaks and Upload Report
     runs-on: ubuntu-latest
     steps:
-      - name: Download report from previous job
-        uses: actions/download-artifact@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          name: gitleaks-report.json
+          fetch-depth: 0
 
-      - name: Upload JSON Report as Artifact
+      # Run Gitleaks with JSON Report
+      - name: Run Gitleaks (JSON Report)
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          fail: true
+          report-format: json
+          report-path: gitleaks-report.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Upload JSON Report as Artifact
+      - name: Upload JSON Report
         uses: actions/upload-artifact@v4
         with:
           name: gitleaks-report-json
           path: gitleaks-report.json
+
+      # Run Gitleaks with CSV Report
+      - name: Run Gitleaks (CSV Report)
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          fail: true
+          report-format: csv
+          report-path: gitleaks-report.csv
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Upload CSV Report as Artifact
+      - name: Upload CSV Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-report-csv
+          path: gitleaks-report.csv
+
+      # Run Gitleaks with SARIF Report for GitHub Security Integration
+      - name: Run Gitleaks (SARIF Report)
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          fail: true
+          report-format: sarif
+          report-path: gitleaks-report.sarif
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Upload SARIF Report to GitHub Security Scanning
+      - name: Upload SARIF Report for Security Tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: gitleaks-report.sarif

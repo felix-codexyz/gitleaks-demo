@@ -1,61 +1,45 @@
-name: Gitleaks Secret Scanning
+name: Gitleaks Scan
 
 on:
   push:
+    branches: [ main ]
   pull_request:
+    branches: [ main ]
 
 jobs:
-  scan:
-    name: Run Gitleaks and Upload Report
+  gitleaks:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Install Gitleaks
-        run: |
-          LATEST_VERSION=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r .tag_name)
-          FILE_NAME="gitleaks_${LATEST_VERSION#v}_linux_x64.tar.gz"
-          wget https://github.com/gitleaks/gitleaks/releases/download/$LATEST_VERSION/$FILE_NAME
-          tar -xvzf $FILE_NAME
-          chmod +x gitleaks
-          sudo mv gitleaks /usr/local/bin/gitleaks
-
-      - name: Verify Gitleaks Installation
-        run: gitleaks version || echo "Gitleaks installation failed!"
-
-      - name: Run Gitleaks (JSON Report)
-        run: gitleaks detect --report-format=json --report-path=gitleaks-report.json || true
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          config: |
+            title = "Gitleaks Config"
+            [[rules]]
+              description = "Generic API Key"
+              regex = '''(?i)api[-_]?key[^0-9a-zA-Z]*(?:[0-9a-zA-Z-_]{20,})'''
+              tags = ["key", "API"]
+            [[rules]]
+              description = "Generic Secret"
+              regex = '''(?i)secret[^0-9a-zA-Z]*(?:[0-9a-zA-Z-_]{20,})'''
+              tags = ["secret"]
+          args: --report-path=gitleaks-report.json --report-format=json,csv,sarif --report-files=gitleaks-report.json,gitleaks-report.csv,gitleaks-report.sarif
 
-      - name: Upload JSON Report
+      - name: Upload Gitleaks Reports
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: gitleaks-report-json
-          path: gitleaks-report.json
-
-      - name: Run Gitleaks (CSV Report)
-        run: gitleaks detect --report-format=csv --report-path=gitleaks-report.csv || true
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
-      - name: Upload CSV Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: gitleaks-report-csv
-          path: gitleaks-report.csv
-
-      - name: Run Gitleaks (SARIF Report)
-        run: gitleaks detect --report-format=sarif --report-path=gitleaks-report.sarif || true
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
-      - name: Upload SARIF Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: gitleaks-report-sarif
-          path: gitleaks-report.sarif
+          name: gitleaks-reports
+          path: |
+            gitleaks-report.json
+            gitleaks-report.csv
+            gitleaks-report.sarif
+          retention-days: 7
